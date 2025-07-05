@@ -1278,6 +1278,7 @@ namespace GoldenSyrupGames.T2MD
                 // the obsidian image size separator is escaped because | is also a table column
                 // separator.
                 // timestamp | filename | ![name|width](relative-path)
+                // csharpier-ignore-start
                 string tableRow =
                     $"{GetHumanReadableTimestamp(attachment.Date)} | "
                     + $"{attachment.FileName} | "
@@ -1286,6 +1287,7 @@ namespace GoldenSyrupGames.T2MD
                         + $"\\|{options.ObsidianAttachmentPreviewWidth}"
                     + $"]"
                     + $"({relativeAttachmentPathSpacesReplaced})";
+                // csharpier-ignore-end
 
                 return tableRow;
             }
