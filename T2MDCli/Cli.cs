@@ -1273,7 +1273,8 @@ namespace GoldenSyrupGames.T2MD
                 // update the model so the replacement works
                 attachment.RelativeAttachmentPathSpacesReplaced =
                     relativeAttachmentPathSpacesReplaced;
-
+                // not making the image the clickable link because this break's Obsidian's
+                // link-updating. See https://github.com/GSGBen/t2md/issues/36.
                 // the obsidian image size separator is escaped because | is also a table column
                 // separator.
                 // timestamp | filename | ![name|width](relative-path)

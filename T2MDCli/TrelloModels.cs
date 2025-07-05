@@ -172,7 +172,7 @@ namespace GoldenSyrupGames.T2MD
         public string ShortUrl { get; set; } = "";
 
         /// <summary>
-        /// Full URL to the card. <para />
+        /// Full URL to the card.
         /// Looks like <c>https://trello.com/c/aaa11bb2/id-card-title-slug</c>. No trailing /.
         /// </summary>
         public string Url { get; set; } = "";
