@@ -1067,7 +1067,6 @@ namespace GoldenSyrupGames.T2MD
                     commentsContents += $"> [!quote]\n";
                     foreach (var line in trelloComment.Data.Text.Split('\n'))
                     {
-                        // Put the comment text in a blockquote.
                         commentsContents += $"> {line}\n";
                     }
                     commentsContents += "\n\n";
@@ -1256,7 +1255,7 @@ namespace GoldenSyrupGames.T2MD
                 // calculate the new URL, from where the markdown files will be to the attachment
                 // file. Markdown supports local relative paths
                 string relativeAttachmentPath =
-                    "./" + Path.GetRelativePath(cardFolderPath, attachmentPath);
+                    ".\\" + Path.GetRelativePath(cardFolderPath, attachmentPath);
                 // prepare the line to add to the file
                 string relativeAttachmentPathSpacesReplaced = relativeAttachmentPath.Replace(
                     " ",
@@ -1274,14 +1273,12 @@ namespace GoldenSyrupGames.T2MD
                 // update the model so the replacement works
                 attachment.RelativeAttachmentPathSpacesReplaced =
                     relativeAttachmentPathSpacesReplaced;
-                // set the timestamp for the attachment
-                attachment.Timestamp = DateTime.UtcNow.ToString("o");
 
                 // the obsidian image size separator is escaped because | is also a table column
                 // separator.
                 // timestamp | filename | ![name|width](relative-path)
                 string tableRow =
-                    $"{attachment.Timestamp} | "
+                    $"{GetHumanReadableTimestamp(attachment.Date)} | "
                     + $"{attachment.FileName} | "
                     + $"!["
                         + $"{attachment.Name}"

@@ -172,7 +172,7 @@ namespace GoldenSyrupGames.T2MD
         public string ShortUrl { get; set; } = "";
 
         /// <summary>
-        /// Contains a useful short ID. <para />
+        /// Full URL to the card. <para />
         /// Looks like <c>https://trello.com/c/aaa11bb2/id-card-title-slug</c>. No trailing /.
         /// </summary>
         public string Url { get; set; } = "";
@@ -405,9 +405,9 @@ namespace GoldenSyrupGames.T2MD
         public string FileName { get; set; } = "";
 
         /// <summary>
-        /// The timestamp when the attachment was added or last updated.
+        /// The timestamp associated with the attachment.
         /// </summary>
-        public string Timestamp { get; set; } = "";
+        public string Date { get; set; } = "";
 
 
         /// <summary>
