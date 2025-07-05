@@ -192,6 +192,11 @@ namespace GoldenSyrupGames.T2MD
         public string DescriptionPath { get; set; } = "";
 
         /// <summary>
+        /// The timestamp when the card description was last updated or created.
+        /// </summary>
+        public string DescriptionTimestamp { get; set; } = "";
+
+        /// <summary>
         /// The path to the file we wrote the card's comments to. Populated after
         /// processing.
         /// </summary>
@@ -318,7 +323,35 @@ namespace GoldenSyrupGames.T2MD
         /// ISO8601 date
         /// </summary>
         public string Date { get; set; } = "";
+
+        /// <summary>
+        /// The member who performed the action (e.g., commenter)
+        /// </summary>
+        public TrelloMemberModel? MemberCreator { get; set; }
+
         public TrelloActionDataModel Data { get; set; } = new TrelloActionDataModel();
+
+        // Returns the commenter's display name, or username if display name is not available
+        public string GetCommenterName()
+        {
+            if (MemberCreator == null)
+                return "Unknown";
+            if (!string.IsNullOrEmpty(MemberCreator.FullName))
+                return MemberCreator.FullName;
+            if (!string.IsNullOrEmpty(MemberCreator.Username))
+                return MemberCreator.Username;
+            return "Unknown";
+        }
+
+        // Returns a human-readable timestamp for the comment
+        public string GetHumanTimestamp()
+        {
+            if (DateTime.TryParse(Date, out var dt))
+            {
+                return dt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+            }
+            return Date;
+        }
 
         // workaround for no Required attribute. Returns true if we have data in fields that should
         // always have data
@@ -336,6 +369,15 @@ namespace GoldenSyrupGames.T2MD
             // else
             return true;
         }
+    }
+    /// <summary>
+    /// Partial model of a Trello member (commenter, etc)
+    /// </summary>
+    public class TrelloMemberModel
+    {
+        public string ID { get; set; } = "";
+        public string Username { get; set; } = "";
+        public string FullName { get; set; } = "";
     }
 
     /// <summary>
@@ -365,6 +407,12 @@ namespace GoldenSyrupGames.T2MD
         public string Url { get; set; } = "";
         public string ID { get; set; } = "";
         public string FileName { get; set; } = "";
+
+        /// <summary>
+        /// The timestamp when the attachment was added or last updated.
+        /// </summary>
+        public string Timestamp { get; set; } = "";
+
 
         /// <summary>
         /// The path that we save the attachment to if we download it, relative to the description

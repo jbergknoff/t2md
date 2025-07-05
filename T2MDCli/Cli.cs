@@ -875,13 +875,17 @@ namespace GoldenSyrupGames.T2MD
             CliOptions options
         )
         {
-            // inject the full title, and short url, into its output. Add a prefix to the short URL
-            // to make the original more easily greppable: a search of just the URL will show all
-            // files that reference it.
+            // inject the full title, timestamp, and short url, into its output. Add a prefix to
+            // the short URL to make the original more easily greppable: a search of just the URL
+            // will show all files that reference it.
+            var timestamp = DateTime.UtcNow.ToString("o");
+            trelloCard.DescriptionTimestamp = timestamp;
             var descriptionContents =
                 $"# {trelloCard.Name}\n"
                 + $"\n"
                 + $"Original URL: {trelloCard.ShortUrl}\n"
+                + $"\n"
+                + $"Timestamp: {timestamp}\n"
                 + $"\n"
                 + $"---\n"
                 + $"\n"
@@ -1041,8 +1045,11 @@ namespace GoldenSyrupGames.T2MD
                     // separate each card's contents
                     string headingPrefix = options.SingleFile ? "###" : "##";
                     commentsContents += $"{headingPrefix} " + new string('-', 40) + "\n\n";
-                    //commentsContents += "## " + new string('-', 10) + $"Comment on
-                    //{trelloComment.Date}" + new string('-', 10) + "\n\n";
+
+                    // Add commenter and timestamp
+                    string commenter = trelloComment.GetCommenterName();
+                    string timestamp = trelloComment.GetHumanTimestamp();
+                    commentsContents += $"> **{commenter}** commented on {timestamp}\n\n";
 
                     commentsContents += trelloComment.Data.Text;
                     commentsContents += "\n\n";
@@ -1127,7 +1134,7 @@ namespace GoldenSyrupGames.T2MD
 
                 // start listing all the attachments, their actual names and paths. a
                 // functional but unformatted markdown table for now
-                attachmentListContents += $"id | original fileName | image\n" + $"---|---|---\n";
+                attachmentListContents += $"timestamp | original fileName | image\n" + $"---|---|---\n";
 
                 // download all uploaded attachments into that folder
                 var AttachmentDownloadTasks = new List<Task<string>>();
@@ -1231,7 +1238,7 @@ namespace GoldenSyrupGames.T2MD
                 // calculate the new URL, from where the markdown files will be to the attachment
                 // file. Markdown supports local relative paths
                 string relativeAttachmentPath =
-                    ".\\" + Path.GetRelativePath(cardFolderPath, attachmentPath);
+                    "./" + Path.GetRelativePath(cardFolderPath, attachmentPath);
                 // prepare the line to add to the file
                 string relativeAttachmentPathSpacesReplaced = relativeAttachmentPath.Replace(
                     " ",
@@ -1249,21 +1256,20 @@ namespace GoldenSyrupGames.T2MD
                 // update the model so the replacement works
                 attachment.RelativeAttachmentPathSpacesReplaced =
                     relativeAttachmentPathSpacesReplaced;
-                // not making the image the clickable link because this break's Obsidian's
-                // link-updating. See https://github.com/GSGBen/t2md/issues/36.
+                // set the timestamp for the attachment
+                attachment.Timestamp = DateTime.UtcNow.ToString("o");
+
                 // the obsidian image size separator is escaped because | is also a table column
                 // separator.
-                // [id](relative-path) | filename | ![name|width](relative-path)
-                // csharpier-ignore-start
+                // timestamp | filename | ![name|width](relative-path)
                 string tableRow =
-                    $"[{attachment.ID}]({relativeAttachmentPathSpacesReplaced}) | "
+                    $"{attachment.Timestamp} | "
                     + $"{attachment.FileName} | "
                     + $"!["
                         + $"{attachment.Name}"
                         + $"\\|{options.ObsidianAttachmentPreviewWidth}"
                     + $"]"
                     + $"({relativeAttachmentPathSpacesReplaced})";
-                // csharpier-ignore-end
 
                 return tableRow;
             }
@@ -1652,7 +1658,7 @@ namespace GoldenSyrupGames.T2MD
                       \/ # /. Keep this in here so we don't match a sentence instead
                          # of the title
                       ( # however still make the card title optional so we can capture
-                        # just a trailing / (line above) too 
+                        # just a trailing / (line above) too
                         (\w|-|%)+ # capture letters, numbers, hyphens and what emoji
                                   # look like when copied and pasted from Chrome URLs
                         \/? # another optional trailing /
