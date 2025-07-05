@@ -172,6 +172,12 @@ namespace GoldenSyrupGames.T2MD
         public string ShortUrl { get; set; } = "";
 
         /// <summary>
+        /// Contains a useful short ID. <para />
+        /// Looks like <c>https://trello.com/c/aaa11bb2/id-card-title-slug</c>. No trailing /.
+        /// </summary>
+        public string Url { get; set; } = "";
+
+        /// <summary>
         /// The board this card is in. <para/>
         /// Specified at the start of each card's processing, only safe to use after that.
         /// </summary>
@@ -192,9 +198,9 @@ namespace GoldenSyrupGames.T2MD
         public string DescriptionPath { get; set; } = "";
 
         /// <summary>
-        /// The timestamp when the card description was last updated or created.
+        /// The timestamp of the last activity on the card.
         /// </summary>
-        public string DescriptionTimestamp { get; set; } = "";
+        public string DateLastActivity { get; set; } = "";
 
         /// <summary>
         /// The path to the file we wrote the card's comments to. Populated after
@@ -341,16 +347,6 @@ namespace GoldenSyrupGames.T2MD
             if (!string.IsNullOrEmpty(MemberCreator.Username))
                 return MemberCreator.Username;
             return "Unknown";
-        }
-
-        // Returns a human-readable timestamp for the comment
-        public string GetHumanTimestamp()
-        {
-            if (DateTime.TryParse(Date, out var dt))
-            {
-                return dt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
-            }
-            return Date;
         }
 
         // workaround for no Required attribute. Returns true if we have data in fields that should

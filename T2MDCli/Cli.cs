@@ -853,6 +853,19 @@ namespace GoldenSyrupGames.T2MD
             return usableCardName;
         }
 
+        // Returns a human-readable timestamp
+        private static string GetHumanReadableTimestamp(string timestamp)
+        {
+            // The timestamp is in ISO 8601 format, e.g. "2023-10-01T12:34:56.789Z"
+            // parse it and convert to local time
+            if (DateTime.TryParse(timestamp, out var dt))
+            {
+                return dt.ToLocalTime().ToString("dddd, MMMM d, yyyy, h:mm tt (zzz)");
+            }
+
+            return timestamp;
+        }
+
         /// <summary>
         /// Write the card description to a markdown file.
         /// </summary>
@@ -875,21 +888,24 @@ namespace GoldenSyrupGames.T2MD
             CliOptions options
         )
         {
-            // inject the full title, timestamp, and short url, into its output. Add a prefix to
+            // inject the timestamp, and short url, into its output. Add a prefix to
             // the short URL to make the original more easily greppable: a search of just the URL
             // will show all files that reference it.
-            var timestamp = DateTime.UtcNow.ToString("o");
-            trelloCard.DescriptionTimestamp = timestamp;
+            //
+            // Skip the title because it's the same as the filename and Obsidian already
+            // displays it as the title.
             var descriptionContents =
-                $"# {trelloCard.Name}\n"
-                + $"\n"
-                + $"Original URL: {trelloCard.ShortUrl}\n"
-                + $"\n"
-                + $"Timestamp: {timestamp}\n"
-                + $"\n"
-                + $"---\n"
-                + $"\n"
-                + $"{trelloCard.Desc}";
+                $"Imported from Trello: {trelloCard.Url}\n"
+                + $"Last activity in Trello on {GetHumanReadableTimestamp(trelloCard.DateLastActivity)}\n"
+                + $"\n";
+
+            if (trelloCard.Desc != null && trelloCard.Desc.Length > 0)
+            {
+                descriptionContents += $"---\n"
+                    + $"\n"
+                    + $"{trelloCard.Desc}";
+            }
+
             // sort the cards in order unless specified otherwise
             var descriptionFilename = options.NoNumbering
                 ? $"{usableCardName}.md"
@@ -1037,21 +1053,23 @@ namespace GoldenSyrupGames.T2MD
                 }
 
                 // order the comments by date. ISO 8601 dates can be sorted as a string
-                IOrderedEnumerable<TrelloActionModel> orderedCardComments = cardComments.OrderBy(
+                IOrderedEnumerable<TrelloActionModel> orderedCardComments = cardComments.OrderByDescending(
                     comment => comment.Date
                 );
                 foreach (TrelloActionModel trelloComment in orderedCardComments)
                 {
-                    // separate each card's contents
-                    string headingPrefix = options.SingleFile ? "###" : "##";
-                    commentsContents += $"{headingPrefix} " + new string('-', 40) + "\n\n";
-
                     // Add commenter and timestamp
                     string commenter = trelloComment.GetCommenterName();
-                    string timestamp = trelloComment.GetHumanTimestamp();
-                    commentsContents += $"> **{commenter}** commented on {timestamp}\n\n";
+                    commentsContents += $"**{commenter}** commented on {GetHumanReadableTimestamp(trelloComment.Date)}:\n\n";
 
-                    commentsContents += trelloComment.Data.Text;
+                    // Start with a "quote" admonition so nested code blocks render properly,
+                    // cf. https://forum.obsidian.md/t/live-preview-support-code-blocks-in-quotes/30783/3
+                    commentsContents += $"> [!quote]\n";
+                    foreach (var line in trelloComment.Data.Text.Split('\n'))
+                    {
+                        // Put the comment text in a blockquote.
+                        commentsContents += $"> {line}\n";
+                    }
                     commentsContents += "\n\n";
                 }
 
